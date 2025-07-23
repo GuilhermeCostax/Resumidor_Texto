@@ -1,0 +1,1 @@
+# Backend da aplicação de resumo de textos

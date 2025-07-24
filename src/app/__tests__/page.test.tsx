@@ -8,6 +8,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock dos componentes que podem causar problemas nos testes
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 jest.mock('@/components/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }));

@@ -3,6 +3,7 @@ import Page from '../page';
 
 // Mock components that might cause issues in tests
 jest.mock('@/components/ui/button', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }));
 

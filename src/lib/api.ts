@@ -21,7 +21,7 @@ export const API_ENDPOINTS = {
 };
 
 // Função helper para fazer requisições autenticadas com fallback
-export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
+export const apiRequest = async (endpoint: string, options: RequestInit = {}, fallbackEndpointFn?: (originalEndpoint: string) => Promise<Response>) => {
   const token = localStorage.getItem('token');
 
   const defaultHeaders: HeadersInit = {
@@ -49,9 +49,9 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}) =>
     }
     
     // Se for um erro 5xx (erro do servidor), tenta o endpoint de fallback
-    if (response.status >= 500) {
+    if (response.status >= 500 && fallbackEndpointFn) {
       console.warn(`Erro ${response.status} ao acessar ${endpoint}. Tentando fallback...`);
-      return await useFallbackEndpoint(endpoint);
+      return await fallbackEndpointFn(endpoint);
     }
     
     // Para outros erros (4xx), retorna a resposta original
@@ -59,87 +59,46 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}) =>
   } catch (error) {
     // Em caso de erro de rede ou outro erro não tratado, usa o fallback
     console.error(`Erro ao acessar ${endpoint}:`, error);
-    return await useFallbackEndpoint(endpoint);
+    if (fallbackEndpointFn) {
+      return await fallbackEndpointFn(endpoint);
+    }
+    // Se não houver fallback, retorna um erro genérico
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: 'Erro de conexão',
+        is_fallback: false
+      }),
+      {
+        status: 503,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 };
 
-// Função para usar o endpoint de fallback
-async function useFallbackEndpoint(originalEndpoint: string): Promise<Response> {
-  try {
-    const fallbackResponse = await fetch(`${API_BASE_URL}/api/health/fallback`);
-    
-    if (fallbackResponse.ok) {
-      const fallbackData = await fallbackResponse.json();
-      
-      // Cria uma resposta simulada com os dados de fallback
-      const mockResponse = new Response(
-        JSON.stringify({
-          success: true,
-          message: fallbackData.message,
-          data: fallbackData.fallback_data,
-          is_fallback: true
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return mockResponse;
-    }
-    
-    // Se o fallback também falhar, retorna um erro genérico
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: 'Serviço temporariamente indisponível',
-        is_fallback: true
-      }),
-      {
-        status: 503,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  } catch (error) {
-    // Se tudo falhar, retorna um erro genérico
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: 'Serviço temporariamente indisponível',
-        is_fallback: true
-      }),
-      {
-        status: 503,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }
-};
+// A função useFallbackEndpoint foi movida para src/hooks/use-fallback-endpoint.ts
 
 // Função helper para requisições POST
-export const apiPost = async (endpoint: string, data: Record<string, unknown>) => {
+export const apiPost = async (endpoint: string, data: Record<string, unknown>, fallbackEndpointFn?: (originalEndpoint: string) => Promise<Response>) => {
   return apiRequest(endpoint, {
     method: 'POST',
     body: JSON.stringify(data),
-  });
+  }, fallbackEndpointFn);
 };
 
 // Função helper para requisições GET
-export const apiGet = async (endpoint: string) => {
+export const apiGet = async (endpoint: string, fallbackEndpointFn?: (originalEndpoint: string) => Promise<Response>) => {
   return apiRequest(endpoint, {
     method: 'GET',
-  });
+  }, fallbackEndpointFn);
 };
 
 // Função helper para requisições DELETE
-export const apiDelete = async (endpoint: string) => {
+export const apiDelete = async (endpoint: string, fallbackEndpointFn?: (originalEndpoint: string) => Promise<Response>) => {
   return apiRequest(endpoint, {
     method: 'DELETE',
-  });
+  }, fallbackEndpointFn);
 };

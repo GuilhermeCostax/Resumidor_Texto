@@ -12,7 +12,7 @@ import React from "react";
 
 // Utils function
 import { cn } from "@/lib/utils";
-import { API_BASE_URL, API_ENDPOINTS, apiPost } from "@/lib/api";
+import { API_ENDPOINTS, apiPost } from "@/lib/api";
 
 // Auto-resize textarea hook
 interface UseAutoResizeTextareaProps {

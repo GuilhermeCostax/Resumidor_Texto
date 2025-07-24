@@ -35,7 +35,7 @@ Aplicação web completa para resumir textos longos usando IA (Google Gemini) co
   - `src/app/`: Páginas e layouts da aplicação.
   - `src/components/`: Componentes reutilizáveis (UI e lógica).
   - `src/lib/`: Funções utilitárias e configurações.
-- `docs/`: Documentação da API (gerada automaticamente).
+- `docs/`: Documentação da API e guias de melhores práticas.
 - `tests/`: Testes automatizados para backend e frontend.
 
 ## 🛠️ Instalação e Configuração
@@ -205,6 +205,18 @@ curl -X POST "<API_URL>/api/resumir-texto" \
 - **Autenticação**: Bearer token em todas as rotas protegidas
 - **Validação**: Schemas Pydantic para validação de dados
 
+## 🧪 Qualidade de Código e Testes
+
+O projeto inclui configurações para garantir a qualidade do código e evitar problemas de compilação:
+
+- **ESLint**: Configurado para detectar problemas de indentação e formatação
+- **Prettier**: Formatação consistente do código
+- **Husky**: Hooks de pré-commit para verificar o código antes de cada commit
+- **Jest**: Framework de testes para componentes React
+- **Vercel**: Configuração específica para deploy na Vercel
+
+Consulte o [Guia de Melhores Práticas](./docs/BEST_PRACTICES.md) para mais detalhes sobre como manter a qualidade do código e evitar problemas de compilação.
+
 ## 🚀 Próximos Passos
 
 1. **Paginação**: Histórico com paginação
@@ -219,6 +231,7 @@ Para fazer o deploy da aplicação em produção, siga as instruções detalhada
 - [Guia de Deploy](./docs/DEPLOY.md) - Instruções gerais de deploy
 - [Deploy no Render](./docs/DEPLOY_RENDER.md) - Instruções específicas para o Render
 - [Checklist de Produção](./docs/PRODUCTION_CHECKLIST.md) - Verificações antes do deploy
+- [Melhores Práticas](./docs/BEST_PRACTICES.md) - Guia para evitar problemas de compilação
 
 ### Configuração Rápida com Render
 
@@ -230,4 +243,17 @@ O projeto inclui um arquivo `render.yaml` que permite fazer o deploy completo (b
 4. O Render detectará automaticamente o arquivo `render.yaml` e configurará todos os serviços
 5. Configure as variáveis de ambiente necessárias
 
-## 📝 Configuração Adicional
+### Configuração para Vercel
+
+O projeto inclui um arquivo `vercel.json` que configura o processo de build para garantir que o código seja verificado antes do deploy:
+
+```json
+{
+  "buildCommand": "npm run lint && npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next"
+}
+```
+
+Certifique-se de configurar as variáveis de ambiente necessárias no dashboard da Vercel.

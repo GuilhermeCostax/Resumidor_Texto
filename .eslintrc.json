@@ -1,0 +1,21 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "indent": ["error", 2],
+    "no-mixed-spaces-and-tabs": "error",
+    "no-trailing-spaces": "error",
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "jsx-quotes": ["error", "prefer-double"],
+    "react/jsx-indent": ["error", 2],
+    "react/jsx-indent-props": ["error", 2],
+    "react/jsx-closing-bracket-location": ["error", "line-aligned"],
+    "react/jsx-closing-tag-location": "error",
+    "react/jsx-tag-spacing": ["error", {
+      "closingSlash": "never",
+      "beforeSelfClosing": "always",
+      "afterOpening": "never",
+      "beforeClosing": "never"
+    }]
+  }
+}

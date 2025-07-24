@@ -23,6 +23,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { apiGet, apiPost, apiDelete, API_ENDPOINTS } from "@/lib/api";
+import { Pagination } from "@/components/ui/pagination";
+import { PageSizeSelector } from "@/components/ui/page-size-selector";
 
 // Interfaces
 
@@ -72,10 +75,15 @@ export default function DashboardPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   // Contadores
-  const charCount = inputText.length;
-  const wordCount = inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
+  const charCount = inputText ? inputText.length : 0;
+  const wordCount = inputText && inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
 
   // Carregar dados do usuário e histórico
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalSummaries, setTotalSummaries] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [historyError, setHistoryError] = useState<string>("");
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -104,35 +112,42 @@ export default function DashboardPage() {
         setIsLoadingUser(false);
       }
     };
-
-    const loadHistory = async () => {
+    
+  const loadHistory = async (page: number = 1, limit: number = pageSize) => {
       try {
+        setIsLoadingHistory(true);
         const token = localStorage.getItem('token');
-        if (!token) return;
+        
+        if (!token) {
+          setHistoryError('Você precisa estar logado para ver seu histórico');
+          return;
+        }
 
-        const response = await fetch('http://localhost:8001/api/historico', {
-           headers: {
-             'Authorization': `Bearer ${token}`
-           }
-         });
+        const skip = (page - 1) * limit;
+        const response = await apiGet(`${API_ENDPOINTS.summaries.list}?skip=${skip}&limit=${limit}`);
 
         if (response.ok) {
-          const historyData = await response.json();
-          setSummaries(historyData);
+          const data = await response.json();
+          setSummaries(data.items);
+          setTotalSummaries(data.total);
+          setCurrentPage(page);
+        } else {
+          setHistoryError('Erro ao carregar histórico');
         }
       } catch (error) {
         console.error('Erro ao carregar histórico:', error);
+        setHistoryError('Erro ao carregar histórico');
       } finally {
         setIsLoadingHistory(false);
       }
     };
 
     loadUserData();
-    loadHistory();
-  }, [router]);
+    loadHistory(currentPage, pageSize);
+  }, [router, currentPage, pageSize]);
 
   const handleSummarize = async () => {
-    if (!inputText.trim()) {
+    if (!inputText || !inputText.trim()) {
       setError("Por favor, insira um texto para resumir.");
       return;
     }
@@ -141,16 +156,9 @@ export default function DashboardPage() {
     setError("");
 
     try {
-      // Chamada real para a API do backend
-      const response = await fetch('http://localhost:8001/api/resumir-texto', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assumindo que o token está no localStorage
-        },
-        body: JSON.stringify({
-          texto_a_resumir: inputText
-        })
+      // Chamada para a API do backend
+      const response = await apiPost(API_ENDPOINTS.summaries.create, {
+        texto_a_resumir: inputText
       });
 
       if (!response.ok) {
@@ -170,6 +178,17 @@ export default function DashboardPage() {
         created_at: data.created_at
       };
       setSummaries(prev => [newSummary, ...prev]);
+      
+      // Atualizar o total de resumos
+      setTotalSummaries(prev => prev + 1);
+      
+      // Voltar para a primeira página
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+      } else {
+        // Se já estiver na primeira página, recarregar o histórico
+        loadHistory(1, pageSize);
+      }
       
     } catch (error) {
       console.error('Erro ao gerar resumo:', error);
@@ -199,28 +218,34 @@ export default function DashboardPage() {
 
   const handleSelectSummary = (summary: Summary) => {
     setSelectedSummary(summary);
-    setInputText(summary.original_text);
-    setSummaryText(summary.summary_text);
+    setInputText(summary?.original_text || '');
+    setSummaryText(summary?.summary_text || '');
   };
 
   const handleDeleteSummary = async (summaryId: number) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8001/api/historico/${summaryId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiDelete(API_ENDPOINTS.summaries.delete(summaryId));
 
       if (response.ok) {
         // Remove do estado local
         setSummaries(prev => prev.filter(s => s.id !== summaryId));
+        // Atualizar o total de resumos
+        setTotalSummaries(prev => prev - 1);
+        
         // Se o resumo deletado estava selecionado, limpa a seleção
         if (selectedSummary?.id === summaryId) {
           setSelectedSummary(null);
           setInputText("");
           setSummaryText("");
+        }
+        
+        // Se após a exclusão a página atual ficar vazia e não for a primeira página,
+        // voltar para a página anterior
+        if (summaries && summaries.length === 1 && currentPage > 1) {
+          setCurrentPage(prev => prev - 1);
+        } else {
+          // Recarregar a página atual
+          loadHistory(currentPage, pageSize);
         }
       } else {
         console.error('Erro ao deletar resumo');
@@ -345,10 +370,10 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-              ) : summaries.length > 0 ? (
+              ) : (summaries && summaries.length > 0) ? (
                 summaries.map((summary) => (
                   <motion.div
-                    key={summary.id}
+                    key={summary?.id || `summary-${index}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={cn(
@@ -359,7 +384,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="text-sm font-medium truncate flex-1">
-                      {summary.original_text?.substring(0, 50) || 'Resumo sem título'}...
+                      {(summary && summary.original_text) ? summary.original_text.substring(0, 50) : 'Resumo sem título'}...
                     </h4>
                       <Button 
                         variant="ghost" 
@@ -367,18 +392,20 @@ export default function DashboardPage() {
                         className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteSummary(summary.id);
+                          if (summary?.id) {
+                            handleDeleteSummary(summary.id);
+                          }
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                      {summary.summary_text}
+                      {summary && summary.summary_text ? summary.summary_text : ''}
                     </p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{summary.original_text?.split(' ').length || 0} palavras</span>
-                      <span>{formatDate(summary.created_at)}</span>
+                      <span>{(summary && summary.original_text) ? summary.original_text.split(' ').length : 0} palavras</span>
+                    <span>{(summary && summary.created_at) ? formatDate(summary.created_at) : ''}</span>
                     </div>
                   </motion.div>
                 ))
@@ -389,6 +416,24 @@ export default function DashboardPage() {
                   <p className="text-xs">Crie seu primeiro resumo!</p>
                 </div>
               )}
+              
+              {/* Paginação e Seletor de Tamanho */}
+                {totalSummaries > 0 && (
+                  <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <Pagination 
+                      currentPage={currentPage}
+                      totalPages={Math.ceil(totalSummaries / pageSize)}
+                      onPageChange={(page) => setCurrentPage(page)}
+                    />
+                    <PageSizeSelector 
+                      pageSize={pageSize}
+                      onPageSizeChange={(size) => {
+                        setPageSize(size);
+                        setCurrentPage(1); // Voltar para a primeira página ao mudar o tamanho
+                      }}
+                    />
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -424,7 +469,7 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-4">
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Total de resumos</p>
-                <p className="text-2xl font-bold text-cyan-600">{summaries.length}</p>
+                <p className="text-2xl font-bold text-cyan-600">{summaries ? summaries.length : 0}</p>
               </div>
             </div>
           </div>
@@ -467,7 +512,7 @@ export default function DashboardPage() {
                       
                       <Button
                         onClick={handleSummarize}
-                        disabled={!inputText.trim() || isLoading}
+                        disabled={!inputText || !inputText.trim() || isLoading}
                         className="bg-cyan-500 hover:bg-cyan-600 text-white"
                       >
                         {isLoading ? (
@@ -544,7 +589,7 @@ export default function DashboardPage() {
                     
                     <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
                       <span>Resumo gerado com IA</span>
-                      <span>{summaryText.split(' ').length} palavras no resumo</span>
+                      <span>{(summaryText && typeof summaryText === 'string') ? summaryText.split(' ').length : 0} palavras no resumo</span>
                     </div>
                   </CardContent>
                 </Card>

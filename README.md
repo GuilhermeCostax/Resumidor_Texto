@@ -212,4 +212,22 @@ curl -X POST "http://localhost:8000/api/resumir-texto" \
 3. **Exportação**: Download do histórico
 4. **Rate Limiting**: Controle de uso da API
 
+## 🌐 Deploy em Produção
+
+Para fazer o deploy da aplicação em produção, siga as instruções detalhadas em:
+
+- [Guia de Deploy](./docs/DEPLOY.md) - Instruções gerais de deploy
+- [Deploy no Render](./docs/DEPLOY_RENDER.md) - Instruções específicas para o Render
+- [Checklist de Produção](./docs/PRODUCTION_CHECKLIST.md) - Verificações antes do deploy
+
+### Configuração Rápida com Render
+
+O projeto inclui um arquivo `render.yaml` que permite fazer o deploy completo (backend, frontend e banco de dados) com apenas alguns cliques:
+
+1. Faça login no [Render](https://render.com)
+2. Clique em "New" → "Blueprint"
+3. Conecte seu repositório Git
+4. O Render detectará automaticamente o arquivo `render.yaml` e configurará todos os serviços
+5. Configure as variáveis de ambiente necessárias
+
 ## 📝 Configuração Adicional

@@ -36,11 +36,16 @@ class UserService:
         return db.query(User).filter(User.id == user_id).first()
     
     @staticmethod
-    def get_user_summaries(db: Session, user_id: int, limit: int = 50) -> List[Summary]:
-        """Busca histórico de resumos do usuário"""
+    def get_user_summaries(db: Session, user_id: int, skip: int = 0, limit: int = 10) -> List[Summary]:
+        """Busca histórico de resumos do usuário com paginação"""
         return db.query(Summary).filter(
             Summary.user_id == user_id
-        ).order_by(Summary.created_at.desc()).limit(limit).all()
+        ).order_by(Summary.created_at.desc()).offset(skip).limit(limit).all()
+        
+    @staticmethod
+    def count_user_summaries(db: Session, user_id: int) -> int:
+        """Conta o total de resumos do usuário"""
+        return db.query(Summary).filter(Summary.user_id == user_id).count()
     
     @staticmethod
     def delete_user_summary(db: Session, summary_id: int, user_id: int) -> bool:

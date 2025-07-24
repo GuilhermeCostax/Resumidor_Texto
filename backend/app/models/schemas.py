@@ -61,3 +61,9 @@ class SummaryHistory(BaseModel):
 
 class UserWithSummaries(User):
     summaries: List[SummaryHistory] = []
+
+class PaginatedSummaryResponse(BaseModel):
+    items: List[SummaryHistory]
+    total: int
+    skip: int
+    limit: int

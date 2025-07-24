@@ -6,6 +6,7 @@ export { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 export { Input } from './input'
 export { Label } from './label'
 export { RadioGroup, RadioGroupItem } from './radio-group'
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 export { Textarea } from './textarea'
 export { ThemeToggle } from './theme-toggle'

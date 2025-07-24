@@ -21,8 +21,33 @@ services:
         sync: false
       - key: FROM_EMAIL
         sync: false
+      - key: FROM_NAME
+        value: SummarizeAI
+      - key: APP_NAME
+        value: AI Text Summarizer
+      - key: DEBUG
+        value: False
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
       - key: FRONTEND_URL
         value: https://your-frontend-domain.com
+
+  - type: web
+    name: ai-text-summarizer-frontend
+    env: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.x
+      - key: NEXT_PUBLIC_API_URL
+        value: https://ai-text-summarizer-backend.onrender.com
 
 databases:
   - name: ai-text-summarizer-db

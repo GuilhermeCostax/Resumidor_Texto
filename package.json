@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "próximo dev",
-    "construir": "próxima construção",
-    "início": "próximo início",
-    "lint": "próximo fiapo",
-    "lint:fix": "próximo lint --fix",
-    "formato": "mais bonito --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "check-format": "mais bonito --check.",
-    "teste": "brincadeira",
-    "teste:observar": "brincadeira --observar",
-    "preparar": "teste -n \"$CI\" || instalação husky"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "formato": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "check-format": "prettier --check .",
+    "teste": "jest",
+    "teste:observar": "jest --watch",
+    "prepare": "test -n \"$CI\" || husky install"
 },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.15",

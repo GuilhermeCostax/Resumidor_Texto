@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Verificando código com ESLint e Prettier..."
+npx lint-staged
+
+echo "🏗️ Executando build para verificar erros de compilação..."
+npm run build
+
+# Se o build falhar, o commit será abortado
+if [ $? -ne 0 ]; then
+  echo "❌ Build falhou! Corrija os erros antes de fazer commit."
+  exit 1
+fi
+
+echo "✅ Código verificado e build concluído com sucesso!"

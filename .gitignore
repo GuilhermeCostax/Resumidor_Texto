@@ -4,6 +4,11 @@
 .env.production
 .env.staging
 
+# Next.js
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+
 # Database
 *.db
 *.sqlite

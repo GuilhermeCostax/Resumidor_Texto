@@ -92,7 +92,8 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        // Garantir que o código só execute no cliente
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         if (!token) {
           router.push('/');
           return;
@@ -122,7 +123,8 @@ export default function DashboardPage() {
   const loadHistory = async (page: number = 1, limit: number = pageSize, search: string = debouncedSearchTerm) => {
     try {
       setIsLoadingHistory(true);
-      const token = localStorage.getItem('token');
+      // Garantir que o código só execute no cliente
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       
       if (!token) {
         setHistoryError('Você precisa estar logado para ver seu histórico');
@@ -215,7 +217,9 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     // Limpar o token de autenticação
-    localStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
     router.push("/");
   };
 
@@ -271,7 +275,7 @@ export default function DashboardPage() {
   };
 
   const handleCopySummary = () => {
-    if (summaryText) {
+    if (summaryText && typeof window !== 'undefined') {
       navigator.clipboard.writeText(summaryText);
     }
   };
@@ -313,8 +317,8 @@ export default function DashboardPage() {
       <motion.aside 
         initial={{ x: -300, opacity: 0 }}
         animate={{ 
-          x: sidebarOpen || window.innerWidth >= 768 ? 0 : -300,
-          opacity: sidebarOpen || window.innerWidth >= 768 ? 1 : 0
+          x: sidebarOpen || (typeof window !== 'undefined' && window.innerWidth >= 768) ? 0 : -300,
+          opacity: sidebarOpen || (typeof window !== 'undefined' && window.innerWidth >= 768) ? 1 : 0
         }}
         transition={{ duration: 0.3 }}
         className={`fixed md:relative z-40 h-full w-[280px] bg-card border-r border-border flex flex-col ${sidebarOpen ? 'block' : 'hidden md:flex'}`}
@@ -488,7 +492,9 @@ export default function DashboardPage() {
                     size="sm"
                     className="h-8 md:h-9 text-xs md:text-sm w-full sm:w-auto"
                     onClick={() => {
-                      window.open(`${API_BASE_URL}${API_ENDPOINTS.summaries.export}${debouncedSearchTerm ? `?search=${encodeURIComponent(debouncedSearchTerm)}` : ''}`, '_blank');
+                      if (typeof window !== 'undefined') {
+                        window.open(`${API_BASE_URL}${API_ENDPOINTS.summaries.export}${debouncedSearchTerm ? `?search=${encodeURIComponent(debouncedSearchTerm)}` : ''}`, '_blank');
+                      }
                     }}
                   >
                     <Download className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />

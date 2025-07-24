@@ -1,20 +1,23 @@
 'use client'
 
+// Importações do React e Next.js
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-// Importações de componentes UI com caminhos absolutos
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+// Importações de bibliotecas externas
+import { motion } from 'framer-motion'
+import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
 
-// Importação do useSearchParams com sintaxe de importação ES6
-import { useSearchParams } from 'next/navigation'
+// Importações de componentes UI
+import { 
+  Button,
+  Input,
+  Label,
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
+  Alert, AlertDescription 
+} from '@/components/ui'
 
 // Componente que usa useSearchParams envolvido em Suspense
 function ResetPasswordForm() {
@@ -49,58 +52,77 @@ function ResetPasswordContent({ token }: { token: string | null }) {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [isValidToken, setIsValidToken] = useState(false)
-  const [userEmail, setUserEmail] = useState('')
-  const [isCheckingToken, setIsCheckingToken] = useState(true)
-  
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
+  // Validação do token
   useEffect(() => {
     if (!token) {
-      setError('Token de recuperação não encontrado')
-      setIsCheckingToken(false)
+      setError('Token inválido ou expirado. Solicite um novo link de redefinição de senha.')
       return
     }
 
-    // Validar token
-    const validateToken = async () => {
+    // Verificar a validade do token no backend
+    const verifyToken = async () => {
       try {
-        const response = await fetch(`http://localhost:8001/api/auth/validate-reset-token/${token}`)
-        const data = await response.json()
+        const response = await fetch('http://localhost:8001/api/auth/verify-reset-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token }),
+        })
 
-        if (response.ok) {
-          setIsValidToken(true)
-          setUserEmail(data.email)
-        } else {
+        if (!response.ok) {
+          const data = await response.json()
           setError(data.detail || 'Token inválido ou expirado')
         }
       } catch (error) {
-        console.error('Erro:', error)
+        console.error('Erro ao verificar token:', error)
         setError('Erro de conexão. Tente novamente.')
-      } finally {
-        setIsCheckingToken(false)
       }
     }
 
-    validateToken()
+    verifyToken()
   }, [token])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  // Função para alternar a visibilidade da senha
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
+  // Função para alternar a visibilidade da confirmação de senha
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword)
+  }
+
+  // Função para validar a senha
+  const validatePassword = () => {
+    if (password.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres')
+      return false
+    }
+
     if (password !== confirmPassword) {
       setError('As senhas não coincidem')
-      return
+      return false
     }
 
-    if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres')
-      return
-    }
+    setError('')
+    return true
+  }
 
+  // Função para lidar com o envio do formulário
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsLoading(true)
     setError('')
     setMessage('')
+
+    if (!validatePassword()) {
+      setIsLoading(false)
+      return
+    }
 
     try {
       const response = await fetch('http://localhost:8001/api/auth/reset-password', {
@@ -108,17 +130,15 @@ function ResetPasswordContent({ token }: { token: string | null }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          token: token,
-          new_password: password 
-        }),
+        body: JSON.stringify({ token, password }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setMessage(data.message)
-        // Redirecionar para login após 3 segundos
+        setSuccess(true)
+        setMessage(data.message || 'Senha redefinida com sucesso!')
+        // Redirecionar para a página de login após 3 segundos
         setTimeout(() => {
           router.push('/login')
         }, 3000)
@@ -133,40 +153,6 @@ function ResetPasswordContent({ token }: { token: string | null }) {
     }
   }
 
-  if (isCheckingToken) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Validando token...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isValidToken) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-xl border-0">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-red-600">Token Inválido</CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center">
-              <Link 
-                href="/login" 
-                className="text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Voltar para o login
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <motion.div
@@ -175,41 +161,36 @@ function ResetPasswordContent({ token }: { token: string | null }) {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="shadow-xl border-0">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <div className="bg-blue-100 p-3 rounded-full">
+        <Card className="shadow-lg border-0">
+          <CardHeader className="space-y-1">
+            <div className="flex justify-center mb-2">
+              <div className="bg-blue-100 p-2 rounded-full">
                 <Lock className="h-6 w-6 text-blue-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              Redefinir Senha
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Para: {userEmail}
+            <CardTitle className="text-2xl text-center font-bold">Redefinir Senha</CardTitle>
+            <CardDescription className="text-center">
+              Digite sua nova senha abaixo
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {message && (
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800 ml-2">
-                  {message}
-                  <br />
-                  <span className="text-sm">Redirecionando para o login...</span>
-                </AlertDescription>
-              </Alert>
-            )}
-            
+          <CardContent>
             {error && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-800">
-                  {error}
-                </AlertDescription>
+              <Alert className="mb-4 bg-red-50 text-red-600 border-red-200">
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            {!message && (
+            {success ? (
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <CheckCircle className="h-12 w-12 text-green-500" />
+                </div>
+                <Alert className="bg-green-50 text-green-600 border-green-200">
+                  <AlertDescription>{message}</AlertDescription>
+                </Alert>
+                <p className="text-sm text-gray-500">Redirecionando para a página de login...</p>
+              </div>
+            ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">Nova Senha</Label>
@@ -217,79 +198,69 @@ function ResetPasswordContent({ token }: { token: string | null }) {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Digite sua nova senha"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      placeholder="********"
                       required
-                      minLength={6}
-                      className="h-11 pr-10"
+                      className="pr-10"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={togglePasswordVisibility}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      )}
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirme sua nova senha"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="********"
                       required
-                      minLength={6}
-                      className="h-11 pr-10"
+                      className="pr-10"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={toggleConfirmPasswordVisibility}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      )}
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
-                
+
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Redefinindo...</span>
-                    </div>
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processando...
+                    </>
                   ) : (
                     'Redefinir Senha'
                   )}
                 </Button>
+
+                <div className="text-center mt-4">
+                  <Link
+                    href="/login"
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    Voltar para o login
+                  </Link>
+                </div>
               </form>
             )}
-
-            <div className="text-center">
-              <Link 
-                href="/login" 
-                className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Voltar para o login
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </motion.div>

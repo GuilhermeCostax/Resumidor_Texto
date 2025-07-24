@@ -113,38 +113,39 @@ export default function DashboardPage() {
       }
     };
     
-  const loadHistory = async (page: number = 1, limit: number = pageSize) => {
-      try {
-        setIsLoadingHistory(true);
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          setHistoryError('Você precisa estar logado para ver seu histórico');
-          return;
-        }
-
-        const skip = (page - 1) * limit;
-        const response = await apiGet(`${API_ENDPOINTS.summaries.list}?skip=${skip}&limit=${limit}`);
-
-        if (response.ok) {
-          const data = await response.json();
-          setSummaries(data.items);
-          setTotalSummaries(data.total);
-          setCurrentPage(page);
-        } else {
-          setHistoryError('Erro ao carregar histórico');
-        }
-      } catch (error) {
-        console.error('Erro ao carregar histórico:', error);
-        setHistoryError('Erro ao carregar histórico');
-      } finally {
-        setIsLoadingHistory(false);
-      }
-    };
-
     loadUserData();
     loadHistory(currentPage, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, currentPage, pageSize]);
+
+  const loadHistory = async (page: number = 1, limit: number = pageSize) => {
+    try {
+      setIsLoadingHistory(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setHistoryError('Você precisa estar logado para ver seu histórico');
+        return;
+      }
+
+      const skip = (page - 1) * limit;
+      const response = await apiGet(`${API_ENDPOINTS.summaries.list}?skip=${skip}&limit=${limit}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setSummaries(data.items);
+        setTotalSummaries(data.total);
+        setCurrentPage(page);
+      } else {
+        setHistoryError('Erro ao carregar histórico');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar histórico:', error);
+      setHistoryError('Erro ao carregar histórico');
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
   const handleSummarize = async () => {
     if (!inputText || !inputText.trim()) {
@@ -370,8 +371,20 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
+              ) : historyError ? (
+                <div className="text-center py-8 text-red-500">
+                  <p className="text-sm">{historyError}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => loadHistory(currentPage, pageSize)}
+                  >
+                    Tentar novamente
+                  </Button>
+                </div>
               ) : (summaries && summaries.length > 0) ? (
-                summaries.map((summary) => (
+                summaries.map((summary, index) => (
                   <motion.div
                     key={summary?.id || `summary-${index}`}
                     initial={{ opacity: 0, y: 10 }}

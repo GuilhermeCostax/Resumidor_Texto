@@ -72,6 +72,9 @@ logs/
 *.tmp
 *.temp
 
+# Duplicated project directory
+Resumidor_Texto/
+
 # Coverage reports
 htmlcov/
 .coverage

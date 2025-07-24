@@ -27,6 +27,8 @@ app = FastAPI(
 # Configurar CORS
 allowed_origins = [
     settings.frontend_url,
+    "https://resumidor-texto.vercel.app",  # URL de produção
+    "https://resumidor-texto-m4w3b85th-guilherme-costas-projects-2a749911.vercel.app", # URL exata do erro
     "http://localhost:3000",  # Para desenvolvimento local
     "http://127.0.0.1:3000",  # Para desenvolvimento local
 ]

@@ -1,145 +1,93 @@
-'use client'
+"use client";
 
-// Importações do React e Next.js
-import { useState } from 'react'
-import Link from 'next/link'
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { KeyRound, ArrowLeft, CheckCircle } from "lucide-react";
 
-// Importações de bibliotecas externas
-import { motion } from 'framer-motion'
-import { ArrowLeft, Mail, Send } from 'lucide-react'
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { API_ENDPOINTS, apiPost } from "@/lib/api";
 
-// Importações de componentes UI
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+const fadeUpVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut" as const,
+    },
+  },
+} as const;
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-    setMessage('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      const response = await fetch('http://localhost:8001/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      })
+      const response = await apiPost(API_ENDPOINTS.auth.forgotPassword, {
+        email,
+      });
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setMessage(data.message)
+      if (response.success) {
+        setSuccess(true);
       } else {
-        setError(data.detail || 'Erro ao solicitar recuperação de senha')
+        setError("Erro ao enviar e-mail de recuperação. Tente novamente.");
       }
-    } catch (error) {
-      console.error('Erro:', error)
-      setError('Erro de conexão. Tente novamente.')
+    } catch (err: any) {
+      console.error("Erro ao solicitar recuperação de senha:", err);
+      setError(
+        err.message || "Erro ao enviar e-mail de recuperação. Tente novamente."
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="shadow-lg border-0">
-          <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-2">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <Mail className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-center font-bold">Recuperar Senha</CardTitle>
-            <CardDescription className="text-center">
-              Digite seu e-mail para receber um link de recuperação
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert className="mb-4 bg-red-50 text-red-600 border-red-200">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {message ? (
-              <div className="text-center space-y-4">
-                <Alert className="bg-green-50 text-green-600 border-green-200">
-                  <AlertDescription>{message}</AlertDescription>
-                </Alert>
-                <div className="mt-4">
-                  <Link
-                    href="/login"
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-center gap-1"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Voltar para o login
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    required
-                    className="h-10"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Enviar Link de Recuperação
-                    </>
-                  )}
-                </Button>
-
-                <div className="text-center mt-4">
-                  <Link
-                    href="/login"
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-center gap-1"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Voltar para o login
-                  </Link>
-                </div>
-              </form>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
-  )
-}
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between">
+          <div className="flex items-center gap-2 font-semibold">
+            <KeyRound className="h-5 w-5" />
+            <span>AI Text Summarizer</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+      <main className="flex-1">
+        <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeUpVariants}
+            className="mx-auto max-w-md"
+          >
+            <Card>
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl">Recuperar senha</CardTitle>
+                <CardDescription>
+                  Digite seu e-mail para receber um link de recuperação de senha
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                {success ? (
+                  <div className="text-center space-y-4">

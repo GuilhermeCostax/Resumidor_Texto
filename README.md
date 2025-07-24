@@ -229,6 +229,7 @@ Consulte o [Guia de Melhores Práticas](./docs/BEST_PRACTICES.md) para mais deta
 Para fazer o deploy da aplicação em produção, siga as instruções detalhadas em:
 
 - [Guia de Deploy](./docs/DEPLOY.md) - Instruções gerais de deploy
+- [Deploy na Vercel](./docs/DEPLOY_VERCEL.md) - Instruções específicas para a Vercel
 - [Deploy no Render](./docs/DEPLOY_RENDER.md) - Instruções específicas para o Render
 - [Checklist de Produção](./docs/PRODUCTION_CHECKLIST.md) - Verificações antes do deploy
 - [Melhores Práticas](./docs/BEST_PRACTICES.md) - Guia para evitar problemas de compilação
@@ -256,4 +257,4 @@ O projeto inclui um arquivo `vercel.json` que configura o processo de build para
 }
 ```
 
-Certifique-se de configurar as variáveis de ambiente necessárias no dashboard da Vercel.
+Certifique-se de configurar as variáveis de ambiente necessárias no dashboard da Vercel. Para instruções detalhadas, consulte o [Guia de Deploy na Vercel](./docs/DEPLOY_VERCEL.md).

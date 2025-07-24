@@ -5,15 +5,18 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+
+// Importações de componentes UI com caminhos absolutos
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
-// Componente que usa useSearchParams envolvido em Suspense
+// Importação do useSearchParams com sintaxe de importação ES6
 import { useSearchParams } from 'next/navigation'
 
+// Componente que usa useSearchParams envolvido em Suspense
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')

@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 ### 3. Configuração da API Key do Google Gemini
 
-Obtenha sua chave em: <mcurl name="Google AI Studio" url="https://aistudio.google.com/app/apikey"></mcurl>
+Obtenha sua chave em: [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 ### 4. Configuração do Arquivo .env
 
@@ -108,7 +108,7 @@ cd backend
 uvicorn app.main:app --reload
 ```
 
-A API estará disponível em: `http://localhost:8000`
+A API estará disponível em: `http://localhost:8001` (desenvolvimento local) ou na URL configurada em `NEXT_PUBLIC_API_URL`
 
 #### b. Iniciar o Frontend (Next.js)
 
@@ -147,7 +147,7 @@ O frontend estará disponível em: `http://localhost:3000`.
 ### 1. Registrar Usuário
 
 ```bash
-curl -X POST "http://localhost:8000/api/auth/register" \
+curl -X POST "<API_URL>/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "usuario@exemplo.com",
@@ -159,7 +159,7 @@ curl -X POST "http://localhost:8000/api/auth/register" \
 ### 2. Fazer Login
 
 ```bash
-curl -X POST "http://localhost:8000/api/auth/login" \
+curl -X POST "<API_URL>/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "usuario@exemplo.com",
@@ -170,7 +170,7 @@ curl -X POST "http://localhost:8000/api/auth/login" \
 ### 3. Resumir Texto (com token)
 
 ```bash
-curl -X POST "http://localhost:8000/api/resumir-texto" \
+curl -X POST "<API_URL>/api/resumir-texto" \
   -H "Authorization: Bearer SEU_TOKEN_AQUI" \
   -H "Content-Type: application/json" \
   -d '{

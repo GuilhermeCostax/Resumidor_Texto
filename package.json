@@ -9,7 +9,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "prepare": "husky install",
+    "prepare": "test -n \"$CI\" || husky install",
     "test": "jest",
     "test:watch": "jest --watch"
   },

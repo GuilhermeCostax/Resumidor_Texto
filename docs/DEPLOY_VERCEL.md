@@ -1,184 +1,115 @@
-# 🚀 Deploy na Vercel - AI Text Summarizer
+# Deploy do Frontend na Vercel
 
-Este guia fornece instruções detalhadas para fazer o deploy do frontend Next.js do AI Text Summarizer na Vercel, garantindo que o código seja verificado e compilado corretamente antes do deploy.
+Este guia fornece instruções detalhadas para fazer o deploy do frontend Next.js do projeto AI Text Summarizer na Vercel.
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
-1. Conta na [Vercel](https://vercel.com)
-2. Repositório Git com o código da aplicação
-3. Backend já deployado (por exemplo, no Render)
+- Conta na [Vercel](https://vercel.com)
+- Repositório Git com o código do projeto
+- Node.js 18.x ou superior instalado localmente
 
-## 🔄 Configuração do Projeto
+## Configuração do Projeto
 
-O projeto já inclui as seguintes configurações para garantir um deploy bem-sucedido na Vercel:
+### 1. Arquivo vercel.json
 
-### 1. Arquivo `vercel.json`
-
-Este arquivo configura o processo de build na Vercel:
+O projeto já inclui um arquivo `vercel.json` na raiz do projeto com as seguintes configurações:
 
 ```json
 {
-  "buildCommand": "npm run lint && npm run build",
-  "installCommand": "npm install",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
 ```
 
-Esta configuração garante que:
-- O linter seja executado antes do build (`npm run lint`)
-- O build seja executado apenas se o linter passar (`npm run build`)
-- A Vercel use o framework correto (Next.js)
-- O diretório de saída seja configurado corretamente (`.next`)
+Este arquivo configura:
 
-### 2. Configuração de Linter (ESLint)
+- O comando de build (`npm run build`)
+- O comando de desenvolvimento (`npm run dev`)
+- O comando de instalação com flag `--legacy-peer-deps` para resolver conflitos de dependências
+- O framework utilizado (Next.js)
+- O diretório de saída (`.next`)
 
-O arquivo `.eslintrc.json` está configurado para detectar problemas de indentação e outros erros comuns:
+### 2. Configuração de Qualidade de Código
 
-```json
-{
-  "extends": ["next/core-web-vitals", "prettier"],
-  "plugins": ["prettier"],
-  "rules": {
-    "indent": ["error", 2],
-    "no-mixed-spaces-and-tabs": "error",
-    "quotes": ["error", "single"],
-    "semi": ["error", "always"],
-    "jsx-quotes": ["error", "prefer-double"]
-  }
-}
-```
+O projeto está configurado com:
 
-### 3. Configuração de Formatação (Prettier)
+- **ESLint**: Para análise estática de código
+- **Prettier**: Para formatação consistente
+- **Jest**: Para testes automatizados
+- **Husky**: Para hooks de pré-commit
 
-O arquivo `.prettierrc` garante uma formatação consistente do código:
+## Deploy na Vercel
 
-```json
-{
-  "semi": true,
-  "singleQuote": true,
-  "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 100,
-  "bracketSpacing": true,
-  "jsxBracketSameLine": false,
-  "arrowParens": "avoid"
-}
-```
-
-### 4. Configuração do Editor (VSCode)
-
-O arquivo `.vscode/settings.json` ajuda a visualizar espaços em branco e indentação:
-
-```json
-{
-  "editor.renderWhitespace": "all",
-  "editor.guides.indentation": true,
-  "editor.detectIndentation": false,
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
-}
-```
-
-### 5. Verificação Pré-commit (Husky)
-
-O projeto usa Husky para verificar o código antes de cada commit:
-
-- `.husky/pre-commit`: Executa `lint-staged` e `npm run build`
-- `package.json`: Configuração de `lint-staged` para verificar arquivos modificados
-
-## 🚀 Deploy na Vercel
-
-### 1. Importar Projeto
+### 1. Conectar Repositório
 
 1. Faça login na [Vercel](https://vercel.com)
-2. Clique em "Add New" → "Project"
+2. Clique em "Add New..." → "Project"
 3. Importe seu repositório Git
-4. Selecione o diretório raiz do frontend (se necessário)
+4. Selecione o repositório do projeto AI Text Summarizer
 
-### 2. Configurar Variáveis de Ambiente
+### 2. Configurar Projeto
 
-No painel de configuração do projeto, adicione:
+1. **Framework Preset**: Selecione "Next.js"
+2. **Root Directory**: Mantenha como "/" (raiz do projeto)
+3. **Build Command**: A Vercel detectará automaticamente o comando do arquivo `vercel.json`
 
-```
-NEXT_PUBLIC_API_URL=https://seu-backend-api.com
-```
+### 3. Variáveis de Ambiente
 
-Substitua `https://seu-backend-api.com` pela URL do seu backend deployado.
+Adicione as seguintes variáveis de ambiente:
 
-### 3. Configurações de Deploy
-
-A Vercel detectará automaticamente o arquivo `vercel.json` e usará as configurações definidas nele. Não é necessário alterar as configurações de build.
+- `NEXT_PUBLIC_API_URL`: URL completa da sua API backend (ex: https://api.seudominio.com)
 
 ### 4. Deploy
 
-Clique em "Deploy" e aguarde o processo de build e deploy.
+1. Clique em "Deploy"
+2. Aguarde a conclusão do processo de build e deploy
 
-## ✅ Verificação do Deploy
+## Verificação do Deploy
 
-### 1. Verificar Logs de Build
+### 1. Verificar Status
 
-Verifique os logs de build para garantir que:
-- O linter foi executado com sucesso
-- O build foi concluído sem erros
+1. Após o deploy, a Vercel fornecerá uma URL para acessar sua aplicação
+2. Verifique se a aplicação está funcionando corretamente
+3. Teste o login, registro e funcionalidades de resumo
 
-### 2. Testar o Site
+### 2. Verificar Logs
 
-1. Acesse a URL fornecida pela Vercel
-2. Verifique se a página inicial carrega corretamente
-3. Teste o registro e login de usuário
-4. Teste a funcionalidade de resumo de texto
+1. Na dashboard da Vercel, acesse "Deployments"
+2. Selecione o deployment mais recente
+3. Clique em "Logs" para verificar os logs de build e runtime
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
-### Problemas Comuns
+### Erros de Dependências
 
-#### Erro de Build por Problemas de Indentação
+Se encontrar erros relacionados a conflitos de dependências durante o build:
 
-**Solução**: 
-1. Verifique os logs de build para identificar o arquivo e a linha com problema
-2. Corrija a indentação no arquivo indicado
-3. Commit e push das alterações
+1. Verifique se o arquivo `vercel.json` está configurado corretamente com `"installCommand": "npm install --legacy-peer-deps"`
+2. Se o erro persistir, considere atualizar as versões das dependências no `package.json`
 
-#### Erro de Conexão com o Backend
+### Erros de Conexão com a API
 
-**Solução**:
-1. Verifique se a variável `NEXT_PUBLIC_API_URL` está configurada corretamente
-2. Confirme que o backend está rodando e acessível
-3. Verifique se o CORS está configurado no backend para permitir requisições da URL da Vercel
+Se a aplicação não conseguir se conectar à API:
 
-#### Erro de Módulos não Encontrados
+1. Verifique se a variável de ambiente `NEXT_PUBLIC_API_URL` está configurada corretamente
+2. Certifique-se de que a API está acessível publicamente
+3. Verifique se há problemas de CORS na API
 
-**Solução**:
-1. Verifique se todas as dependências estão no `package.json`
-2. Tente adicionar `--legacy-peer-deps` ao comando de instalação nas configurações da Vercel
+## Segurança em Produção
 
-## 🔒 Segurança
+1. **HTTPS**: A Vercel fornece HTTPS por padrão
+2. **Variáveis de Ambiente**: Nunca exponha chaves sensíveis no código frontend
+3. **CSP**: Considere implementar Content Security Policy para maior segurança
 
-- ✅ Use HTTPS (automático na Vercel)
-- ✅ Configure CORS no backend para permitir apenas a URL da Vercel
-- ✅ Não exponha variáveis de ambiente sensíveis no frontend
-- ✅ Use tokens JWT com expiração adequada
+## Monitoramento
 
-## 📊 Monitoramento
-
-- Configure alertas na Vercel para falhas de build e deploy
-- Monitore o uso de recursos e performance
-- Utilize o Analytics da Vercel para monitorar o tráfego e performance
+1. **Analytics**: Ative o Vercel Analytics para monitorar o desempenho e uso
+2. **Alertas**: Configure alertas para falhas de build ou problemas de runtime
 
 ---
 
-**Pronto!** Seu frontend Next.js do AI Text Summarizer está agora rodando na Vercel! 🎉
+Para mais informações sobre o deploy na Vercel, consulte a [documentação oficial da Vercel](https://vercel.com/docs).

@@ -48,6 +48,10 @@ env/
 .vscode/
 .idea/
 *.swp
+
+# Testing
+coverage/
+.husky/_
 *.swo
 *~
 
@@ -76,9 +80,3 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
-
-# Jest
-coverage/
-
-# Husky
-.husky/_

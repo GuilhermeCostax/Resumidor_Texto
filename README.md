@@ -35,7 +35,7 @@ Aplicação web completa para resumir textos longos usando IA (Google Gemini) co
   - `src/app/`: Páginas e layouts da aplicação.
   - `src/components/`: Componentes reutilizáveis (UI e lógica).
   - `src/lib/`: Funções utilitárias e configurações.
-- `docs/`: Documentação da API e guias de melhores práticas.
+- `docs/`: Documentação da API (gerada automaticamente).
 - `tests/`: Testes automatizados para backend e frontend.
 
 ## 🛠️ Instalação e Configuração
@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 ### 3. Configuração da API Key do Google Gemini
 
-Obtenha sua chave em: [Google AI Studio](https://aistudio.google.com/app/apikey)
+Obtenha sua chave em: <mcurl name="Google AI Studio" url="https://aistudio.google.com/app/apikey"></mcurl>
 
 ### 4. Configuração do Arquivo .env
 
@@ -205,18 +205,6 @@ curl -X POST "<API_URL>/api/resumir-texto" \
 - **Autenticação**: Bearer token em todas as rotas protegidas
 - **Validação**: Schemas Pydantic para validação de dados
 
-## 🧪 Qualidade de Código e Testes
-
-O projeto inclui configurações para garantir a qualidade do código e evitar problemas de compilação:
-
-- **ESLint**: Configurado para detectar problemas de indentação e formatação
-- **Prettier**: Formatação consistente do código
-- **Husky**: Hooks de pré-commit para verificar o código antes de cada commit
-- **Jest**: Framework de testes para componentes React
-- **Vercel**: Configuração específica para deploy na Vercel
-
-Consulte o [Guia de Melhores Práticas](./docs/BEST_PRACTICES.md) para mais detalhes sobre como manter a qualidade do código e evitar problemas de compilação.
-
 ## 🚀 Próximos Passos
 
 1. **Paginação**: Histórico com paginação
@@ -224,15 +212,28 @@ Consulte o [Guia de Melhores Práticas](./docs/BEST_PRACTICES.md) para mais deta
 3. **Exportação**: Download do histórico
 4. **Rate Limiting**: Controle de uso da API
 
+## 🧪 Testes
+
+O projeto está configurado com Jest para testes automatizados do frontend:
+
+```bash
+# Executar testes
+npm test
+
+# Executar testes em modo watch
+npm run test:watch
+```
+
+Os testes estão localizados em `src/app/__tests__/` e seguem as melhores práticas para testes de componentes React.
+
 ## 🌐 Deploy em Produção
 
 Para fazer o deploy da aplicação em produção, siga as instruções detalhadas em:
 
 - [Guia de Deploy](./docs/DEPLOY.md) - Instruções gerais de deploy
-- [Deploy na Vercel](./docs/DEPLOY_VERCEL.md) - Instruções específicas para a Vercel
 - [Deploy no Render](./docs/DEPLOY_RENDER.md) - Instruções específicas para o Render
+- [Deploy na Vercel](./docs/DEPLOY_VERCEL.md) - Instruções específicas para a Vercel
 - [Checklist de Produção](./docs/PRODUCTION_CHECKLIST.md) - Verificações antes do deploy
-- [Melhores Práticas](./docs/BEST_PRACTICES.md) - Guia para evitar problemas de compilação
 
 ### Configuração Rápida com Render
 
@@ -246,15 +247,19 @@ O projeto inclui um arquivo `render.yaml` que permite fazer o deploy completo (b
 
 ### Configuração para Vercel
 
-O projeto inclui um arquivo `vercel.json` que configura o processo de build para garantir que o código seja verificado antes do deploy:
+O projeto inclui um arquivo `vercel.json` que configura o processo de build na Vercel:
 
 ```json
 {
-  "buildCommand": "npm run lint && npm run build",
-  "installCommand": "npm install",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
 ```
 
-Certifique-se de configurar as variáveis de ambiente necessárias no dashboard da Vercel. Para instruções detalhadas, consulte o [Guia de Deploy na Vercel](./docs/DEPLOY_VERCEL.md).
+Este arquivo resolve problemas de compatibilidade de dependências usando a flag `--legacy-peer-deps` durante a instalação.
+
+## 📝 Configuração Adicional

@@ -1,48 +1,42 @@
-# Documentação do Projeto SummarizeAI
+# Documentação do SummarizeAI
 
-Esta pasta contém documentação importante para o projeto SummarizeAI, incluindo guias de melhores práticas, padrões de código, instruções de deploy e outras informações relevantes para o desenvolvimento e manutenção do projeto.
+Esta pasta contém a documentação completa do projeto SummarizeAI (AI Text Summarizer). Aqui você encontrará guias detalhados sobre configuração, deploy e melhores práticas.
 
-## Conteúdo
-
-### Guias de Melhores Práticas
-- [Melhores Práticas](./BEST_PRACTICES.md) - Guia de melhores práticas para evitar erros de compilação e garantir a qualidade do código.
+## Guias Disponíveis
 
 ### Guias de Deploy
-- [Guia de Deploy Geral](./DEPLOY.md) - Instruções gerais para deploy da aplicação.
-- [Deploy na Vercel](./DEPLOY_VERCEL.md) - Instruções específicas para deploy do frontend na Vercel.
-- [Deploy no Render](./DEPLOY_RENDER.md) - Instruções específicas para deploy no Render.
 
-### Checklists e Verificações
-- [Checklist de Produção](./PRODUCTION_CHECKLIST.md) - Lista de verificações antes do deploy em produção.
+- [Guia Geral de Deploy](./DEPLOY.md) - Instruções gerais para deploy em produção
+- [Deploy no Render](./DEPLOY_RENDER.md) - Guia específico para deploy na plataforma Render
+- [Deploy na Vercel](./DEPLOY_VERCEL.md) - Guia específico para deploy do frontend na Vercel
 
-## Objetivo
+### Checklists e Configurações
 
-O objetivo desta documentação é fornecer orientações claras para todos os desenvolvedores que trabalham no projeto, garantindo consistência, qualidade e evitando problemas comuns durante o desenvolvimento e deploy.
+- [Checklist de Produção](./PRODUCTION_CHECKLIST.md) - Verificações importantes antes do deploy em produção
+- [Configuração do Gmail](./GMAIL_SETUP_GUIDE.md) - Como configurar o envio de emails com Gmail
+- [Guia de Redefinição de Senha](./PASSWORD_RESET_GUIDE.md) - Implementação do fluxo de redefinição de senha
 
-## Configurações Importantes
+### Configurações Importantes
 
-### Vercel
-O projeto inclui configurações específicas para garantir um deploy bem-sucedido na Vercel:
+#### Vercel
 
-- `vercel.json` - Configura o processo de build para executar o linter antes do build.
-- `.eslintrc.json` - Detecta problemas de indentação e outros erros comuns.
-- `.prettierrc` - Garante uma formatação consistente do código.
-- `.vscode/settings.json` - Ajuda a visualizar espaços em branco e indentação.
-- `.husky/pre-commit` - Verifica o código antes de cada commit.
+O projeto inclui um arquivo `vercel.json` na raiz que configura:
+- Comando de build: `npm run build`
+- Comando de instalação: `npm install --legacy-peer-deps` (resolve conflitos de dependências)
+- Framework: Next.js
 
-### Render
-O projeto também inclui configurações para deploy no Render:
+#### Render
 
-- `render.yaml` - Configuração completa para deploy do backend, frontend e banco de dados.
+O projeto inclui um arquivo `render.yaml` na raiz que configura:
+- Serviço web para o backend (Python/FastAPI)
+- Serviço web para o frontend (Node.js/Next.js)
+- Banco de dados PostgreSQL
 
-## Contribuição
+## Como Contribuir
 
-Sinta-se à vontade para contribuir com esta documentação, adicionando novos guias, atualizando informações existentes ou corrigindo erros. Para contribuir:
+Para contribuir com a documentação:
 
-1. Faça um fork do repositório
-2. Crie uma branch para suas alterações
-3. Envie um pull request com suas contribuições
-
-## Contato
-
-Se tiver dúvidas ou sugestões sobre a documentação, entre em contato com a equipe de desenvolvimento.
+1. Crie um novo arquivo markdown na pasta `docs/`
+2. Adicione um link para o novo documento neste README
+3. Mantenha o estilo consistente com a documentação existente
+4. Use exemplos práticos sempre que possível

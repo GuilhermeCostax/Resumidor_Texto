@@ -1,197 +1,137 @@
-# Melhores Práticas para o Projeto SummarizeAI
+# Melhores Práticas de Desenvolvimento
 
-Este documento contém recomendações para garantir a qualidade do código e evitar problemas de compilação, especialmente para o deploy na Vercel.
+Este documento descreve as melhores práticas para o desenvolvimento do projeto AI Text Summarizer, garantindo qualidade de código, segurança e manutenibilidade.
 
-## Prevenção de Erros de Compilação
+## Qualidade de Código
 
-### 1. Configurar um Linter para Detectar Problemas de Indentação
+### ESLint e Prettier
 
-**Recomendação:** Adicionar e configurar ESLint com regras específicas para indentação.
+O projeto utiliza ESLint para análise estática de código e Prettier para formatação consistente.
 
-**Implementação:**
+- **ESLint**: Verifica problemas de código e aplica regras de estilo
+- **Prettier**: Formata automaticamente o código para manter consistência
 
-1. Certifique-se de que o ESLint está instalado no projeto:
+#### Configuração
 
-```bash
-npm install --save-dev eslint eslint-config-next
-```
+- ESLint está configurado no arquivo `eslint.config.mjs`
+- Prettier está configurado através do ESLint
 
-2. Adicione as seguintes regras ao arquivo `.eslintrc.json` ou `eslint.config.mjs`:
-
-```json
-{
-  "extends": ["next/core-web-vitals"],
-  "rules": {
-    "indent": ["error", 2],
-    "no-mixed-spaces-and-tabs": "error",
-    "no-trailing-spaces": "error"
-  }
-}
-```
-
-3. Adicione um script no `package.json` para verificar o código:
-
-```json
-"scripts": {
-  "lint": "next lint",
-  "lint:fix": "next lint --fix"
-}
-```
-
-### 2. Configurar o Editor para Mostrar Espaços em Branco e Indentação
-
-**Recomendação:** Configure seu editor de código para visualizar espaços em branco e indentação.
-
-**Implementação:**
-
-1. Para VSCode, adicione um arquivo `.vscode/settings.json` no projeto:
-
-```json
-{
-  "editor.renderWhitespace": "boundary",
-  "editor.guides.indentation": true,
-  "editor.detectIndentation": true,
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  }
-}
-```
-
-2. Adicione este arquivo ao repositório para que todos os desenvolvedores tenham a mesma configuração.
-
-### 3. Executar Build Antes de Fazer Push para o Repositório
-
-**Recomendação:** Implemente hooks de pré-commit para executar o build automaticamente.
-
-**Implementação:**
-
-1. Instale as dependências necessárias:
+#### Uso
 
 ```bash
-npm install --save-dev husky lint-staged
+# Verificar problemas de código
+npm run lint
+
+# Corrigir problemas automaticamente
+npm run lint -- --fix
 ```
 
-2. Configure o Husky e lint-staged no `package.json`:
+### Husky e Hooks de Git
 
-```json
-{
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged && npm run build"
-    }
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"]
-  }
-}
-```
+O projeto utiliza Husky para executar verificações antes de cada commit.
 
-3. Inicialize o Husky:
+- **pre-commit**: Executa lint-staged e build antes de cada commit
+- **lint-staged**: Executa ESLint e Prettier apenas nos arquivos modificados
+
+### Testes com Jest
+
+O projeto utiliza Jest para testes automatizados.
+
+- **Jest**: Framework de testes para JavaScript/TypeScript
+- **Testing Library**: Biblioteca para testar componentes React
+
+#### Configuração
+
+- Jest está configurado no arquivo `jest.config.js`
+- Setup adicional no arquivo `jest.setup.js`
+
+#### Uso
 
 ```bash
-npx husky install
-npx husky add .husky/pre-commit "npx lint-staged && npm run build"
+# Executar todos os testes
+npm test
+
+# Executar testes em modo watch
+npm run test:watch
 ```
 
-### 4. Adicionar Testes Automatizados
+#### Estrutura de Testes
 
-**Recomendação:** Implemente testes automatizados para garantir que o código compile corretamente.
+- Testes de componentes: `src/components/__tests__/`
+- Testes de páginas: `src/app/__tests__/`
 
-**Implementação:**
+## Segurança
 
-1. Instale as dependências de teste:
+### Variáveis de Ambiente
 
-```bash
-npm install --save-dev jest @testing-library/react @testing-library/jest-dom jest-environment-jsdom
-```
+- Nunca comitar arquivos `.env` no repositório
+- Usar `.env.example` como template para variáveis necessárias
+- Em produção, usar variáveis de ambiente do provedor (Vercel, Render)
 
-2. Configure o Jest no `package.json`:
+### Autenticação
 
-```json
-{
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
-    "moduleNameMapper": {
-      "^@/components/(.*)$": "<rootDir>/src/components/$1",
-      "^@/lib/(.*)$": "<rootDir>/src/lib/$1"
-    }
-  },
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
-  }
-}
-```
+- Sempre usar HTTPS em produção
+- Implementar proteção contra CSRF
+- Usar tokens JWT com expiração adequada
 
-3. Crie um arquivo `jest.setup.js` na raiz do projeto:
+## Convenções de Código
 
-```javascript
-import '@testing-library/jest-dom';
-```
+### TypeScript
 
-4. Adicione testes básicos para os componentes principais, começando com um teste simples para verificar se o componente renderiza:
+- Usar tipos explícitos sempre que possível
+- Evitar o uso de `any`
+- Usar interfaces para definir contratos
 
-```javascript
-// src/app/__tests__/page.test.tsx
-import { render, screen } from '@testing-library/react';
-import Page from '../page';
+### React
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-  }),
-}));
+- Usar componentes funcionais com hooks
+- Separar lógica de UI em hooks personalizados
+- Usar Context API para estado global quando necessário
 
-describe('Home Page', () => {
-  it('renders without crashing', () => {
-    render(<Page />);
-    expect(screen.getByText(/Transforme textos longos/i)).toBeInTheDocument();
-  });
-});
-```
+### Estilo
 
-## Configuração Específica para Vercel
+- Usar Tailwind CSS para estilização
+- Seguir o design system definido em `components.json`
+- Usar componentes reutilizáveis da pasta `src/components/ui/`
 
-### 1. Configurar Verificações de Build na Vercel
+## Processo de Desenvolvimento
 
-**Recomendação:** Configure a Vercel para executar verificações de build antes do deploy.
+### Branches
 
-**Implementação:**
+- `main`: Branch principal, sempre estável
+- `develop`: Branch de desenvolvimento
+- `feature/*`: Branches para novas funcionalidades
+- `bugfix/*`: Branches para correções de bugs
 
-1. Crie um arquivo `vercel.json` na raiz do projeto:
+### Commits
 
-```json
-{
-  "buildCommand": "npm run lint && npm run build",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "outputDirectory": ".next"
-}
-```
+- Usar mensagens de commit descritivas
+- Seguir o formato: `tipo(escopo): mensagem`
+- Tipos: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
-### 2. Configurar Variáveis de Ambiente na Vercel
+### Pull Requests
 
-**Recomendação:** Certifique-se de que todas as variáveis de ambiente necessárias estão configuradas na Vercel.
+- Descrever claramente as mudanças
+- Referenciar issues relacionadas
+- Garantir que todos os testes passem
+- Solicitar revisão de pelo menos um desenvolvedor
 
-**Implementação:**
+## Deploy
 
-1. No dashboard da Vercel, vá para o seu projeto > Settings > Environment Variables.
-2. Adicione todas as variáveis de ambiente listadas no arquivo `.env.example`.
-3. Certifique-se de que `NEXT_PUBLIC_API_URL` está configurado corretamente para apontar para o backend em produção.
+### Vercel
 
-### 3. Configurar Previews de Pull Request
+- Usar o arquivo `vercel.json` para configurar o deploy
+- Configurar variáveis de ambiente na interface da Vercel
+- Verificar logs de build e runtime após o deploy
 
-**Recomendação:** Habilite previews de Pull Request na Vercel para testar mudanças antes de mesclar com a branch principal.
+### Render
 
-**Implementação:**
+- Usar o arquivo `render.yaml` para configurar o deploy
+- Configurar variáveis de ambiente na interface do Render
+- Verificar logs de build e runtime após o deploy
 
-1. No dashboard da Vercel, vá para o seu projeto > Settings > Git.
-2. Habilite "Preview Deployments" para todas as branches.
+## Monitoramento
 
-## Conclusão
-
-Seguindo estas recomendações, você pode melhorar significativamente a qualidade do código e evitar problemas de compilação, especialmente no ambiente de produção da Vercel. Estas práticas ajudarão a garantir que o código seja consistente, bem formatado e livre de erros comuns de sintaxe e indentação.
+- Implementar logging adequado
+- Configurar alertas para erros críticos
+- Monitorar performance e uso de recursos

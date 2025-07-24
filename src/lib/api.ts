@@ -1,5 +1,5 @@
 // Configuração centralizada da API
-export const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8001';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
 // Endpoints da API
 export const API_ENDPOINTS = {
@@ -9,7 +9,8 @@ export const API_ENDPOINTS = {
     me: '/api/auth/me',
     forgotPassword: '/api/auth/forgot-password',
     resetPassword: '/api/auth/reset-password',
-    validateResetToken: '/api/auth/validate-reset-token'
+    validateResetToken: '/api/auth/validate-reset-token',
+    verifyResetToken: '/api/auth/verify-reset-token'
   },
   summaries: {
     create: '/api/resumir-texto',

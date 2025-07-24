@@ -37,6 +37,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,16 +45,66 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // Aqui você implementaria a lógica de login
-      console.log("Login attempt:", { email, password });
+      // Chamada real para a API de login
+      const response = await fetch('http://localhost:8001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Credenciais inválidas');
+      }
+
+      const data = await response.json();
       
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Salvar token no localStorage
+      localStorage.setItem('token', data.access_token);
       
       // Redirecionar para dashboard após login bem-sucedido
       router.push('/dashboard');
-    } catch {
+    } catch (error) {
+      console.error('Erro no login:', error);
       setError("Credenciais inválidas. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      setError("Por favor, insira seu email antes de solicitar a recuperação de senha.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    setResetMessage("");
+
+    try {
+      const response = await fetch('http://localhost:8001/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao enviar email de recuperação');
+      }
+
+      setResetMessage("Email de recuperação enviado! Verifique sua caixa de entrada.");
+    } catch (error) {
+      console.error('Erro ao solicitar recuperação:', error);
+      setError("Erro ao enviar email de recuperação. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -123,6 +174,16 @@ export default function LoginPage() {
                 </motion.div>
               )}
 
+              {resetMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md"
+                >
+                  <p className="text-sm text-green-600 dark:text-green-400">{resetMessage}</p>
+                </motion.div>
+              )}
+
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium text-foreground">
@@ -175,12 +236,14 @@ export default function LoginPage() {
                   <input type="checkbox" className="rounded border-border" />
                   <span className="text-muted-foreground">Lembrar de mim</span>
                 </label>
-                <Link
-                  href="/forgot-password"
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
                   className="text-sm text-cyan-600 hover:text-cyan-500 transition-colors"
+                  disabled={isLoading}
                 >
                   Esqueceu a senha?
-                </Link>
+                </button>
               </div>
 
               <Button

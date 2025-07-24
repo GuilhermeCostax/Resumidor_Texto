@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Circle, Zap, FileText, Clock, Users, ArrowRight, LogIn, UserPlus, Sparkles, Brain, Target, TrendingUp } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -516,18 +515,14 @@ function AITextSummarizerLanding() {
           
           <div className="flex items-center space-x-4">
             <ThemeToggle variant="button" size="sm" />
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                <LogIn className="w-4 h-4 mr-2" />
-                Entrar
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="bg-cyan-500 hover:bg-cyan-600">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Cadastrar
-              </Button>
-            </Link>
+            <Button variant="ghost" size="sm" onClick={() => window.location.href = '/login'}>
+              <LogIn className="w-4 h-4 mr-2" />
+              Entrar
+            </Button>
+            <Button size="sm" className="bg-cyan-500 hover:bg-cyan-600" onClick={() => window.location.href = '/register'}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Cadastrar
+            </Button>
           </div>
         </div>
       </header>
@@ -626,7 +621,7 @@ function AITextSummarizerLanding() {
               className="mb-12"
             >
               <AIInput 
-                placeholder="Cole seu texto aqui para obter um resumo instantâneo com IA..."
+                placeholder="Digite ou cole seu texto aqui..."
                 onSubmit={handleSummarize}
                 className="max-w-2xl mx-auto"
               />
@@ -729,11 +724,11 @@ function AITextSummarizerLanding() {
               animate="visible"
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Button size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3">
+              <Button size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3" onClick={() => window.location.href = '/register'}>
                 <UserPlus className="w-5 h-5 mr-2" />
                 Comece Gratuitamente
               </Button>
-              <Button variant="outline" size="lg" className="px-8 py-3">
+              <Button variant="outline" size="lg" className="px-8 py-3" onClick={() => window.location.href = '/login'}>
                 <LogIn className="w-5 h-5 mr-2" />
                 Entrar
               </Button>
@@ -801,12 +796,12 @@ function AITextSummarizerLanding() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3">
+              <Button size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3" onClick={() => window.location.href = '/register'}>
                 <UserPlus className="w-5 h-5 mr-2" />
                 Iniciar Teste Gratuito
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button variant="outline" size="lg" className="px-8 py-3">
+              <Button variant="outline" size="lg" className="px-8 py-3" onClick={() => window.location.href = '/login'}>
                 <LogIn className="w-5 h-5 mr-2" />
                 Acessar Conta
               </Button>

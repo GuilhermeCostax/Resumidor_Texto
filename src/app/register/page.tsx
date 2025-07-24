@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserPlus, Sparkles, Eye, EyeOff, ArrowLeft, Check } from "lucide-react";
+import { UserPlus, Sparkles, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,6 @@ function getPasswordStrength(password: string) {
     lowercase: /[a-z]/.test(password),
     uppercase: /[A-Z]/.test(password),
     number: /\d/.test(password),
-    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
   };
 
   strength = Object.values(checks).filter(Boolean).length;
@@ -46,8 +45,8 @@ function getPasswordStrength(password: string) {
   return {
     strength,
     checks,
-    label: strength < 2 ? "Fraca" : strength < 4 ? "Média" : "Forte",
-    color: strength < 2 ? "red" : strength < 4 ? "yellow" : "green",
+    label: strength < 2 ? "Fraca" : strength < 3 ? "Média" : "Forte",
+    color: strength < 2 ? "red" : strength < 3 ? "yellow" : "green",
   };
 }
 
@@ -97,16 +96,45 @@ export default function RegisterPage() {
     }
 
     try {
-      // Aqui você implementaria a lógica de cadastro
-      console.log("Register attempt:", formData);
-      
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirecionar para dashboard após cadastro bem-sucedido
-      router.push('/dashboard');
-    } catch {
-      setError("Erro ao criar conta. Tente novamente.");
+      const response = await fetch('http://localhost:8001/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Erro ao criar conta');
+      }
+
+      // Fazer login automático após registro
+      const loginResponse = await fetch('http://localhost:8001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        localStorage.setItem('token', loginData.access_token);
+        router.push('/dashboard');
+      } else {
+        // Se o login automático falhar, redirecionar para login
+        router.push('/login');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erro ao criar conta. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -269,17 +297,16 @@ export default function RegisterPage() {
                       <div className="space-y-1">
                         {Object.entries(passwordStrength.checks).map(([key, passed]) => (
                           <div key={key} className="flex items-center space-x-2">
-                            <Check className={`w-3 h-3 ${
-                              passed ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'
+                            <div className={`w-2 h-2 rounded-full ${
+                              passed ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                             }`} />
                             <span className={`text-xs ${
-                              passed ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
+                              passed ? 'text-green-600 dark:text-green-400' : 'text-gray-500'
                             }`}>
                               {key === 'length' && '8+ caracteres'}
                               {key === 'lowercase' && 'Letra minúscula'}
                               {key === 'uppercase' && 'Letra maiúscula'}
                               {key === 'number' && 'Número'}
-                              {key === 'special' && 'Caractere especial'}
                             </span>
                           </div>
                         ))}

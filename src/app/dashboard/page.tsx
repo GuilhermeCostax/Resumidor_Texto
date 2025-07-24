@@ -28,18 +28,16 @@ import { cn } from "@/lib/utils";
 
 // Interfaces
 interface Summary {
-  id: string;
-  title: string;
-  originalText: string;
-  summaryText: string;
-  createdAt: string;
-  wordCount: number;
-  charCount: number;
+  id: number;
+  original_text: string;
+  summary_text: string;
+  created_at: string;
 }
 
 interface User {
   id: string;
-  name: string;
+  name?: string;
+  username?: string;
   email: string;
   avatar?: string;
 }
@@ -68,42 +66,70 @@ export default function DashboardPage() {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
   
-  // Mock user data - em produção viria da autenticação
-  const [user] = useState<User>({
-    id: "1",
-    name: "João Silva",
-    email: "joao@email.com",
-    avatar: ""
-  });
+  // Estados para dados reais da API
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   // Contadores
   const charCount = inputText.length;
   const wordCount = inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
 
-  // Mock data para histórico
+  // Carregar dados do usuário e histórico
   useEffect(() => {
-    const mockSummaries: Summary[] = [
-      {
-        id: "1",
-        title: "Artigo sobre IA",
-        originalText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-        summaryText: "Resumo sobre inteligência artificial e suas aplicações.",
-        createdAt: "2024-01-15T10:30:00Z",
-        wordCount: 150,
-        charCount: 850
-      },
-      {
-        id: "2",
-        title: "Relatório de vendas",
-        originalText: "Relatório detalhado sobre as vendas do último trimestre...",
-        summaryText: "Vendas aumentaram 25% no último trimestre.",
-        createdAt: "2024-01-14T14:20:00Z",
-        wordCount: 200,
-        charCount: 1200
+    const loadUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/');
+          return;
+        }
+
+        const response = await fetch('http://localhost:8001/api/auth/me', {
+           headers: {
+             'Authorization': `Bearer ${token}`
+           }
+         });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          router.push('/');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+        router.push('/');
+      } finally {
+        setIsLoadingUser(false);
       }
-    ];
-    setSummaries(mockSummaries);
-  }, []);
+    };
+
+    const loadHistory = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('http://localhost:8001/api/historico', {
+           headers: {
+             'Authorization': `Bearer ${token}`
+           }
+         });
+
+        if (response.ok) {
+          const historyData = await response.json();
+          setSummaries(historyData);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    loadUserData();
+    loadHistory();
+  }, [router]);
 
   const handleSummarize = async () => {
     if (!inputText.trim()) {
@@ -115,39 +141,53 @@ export default function DashboardPage() {
     setError("");
 
     try {
-      // Aqui você faria a chamada para a API
-      // const response = await fetch('/api/summarize', { ... });
+      // Chamada real para a API do backend
+      const response = await fetch('http://localhost:8001/api/resumir-texto', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assumindo que o token está no localStorage
+        },
+        body: JSON.stringify({
+          texto_a_resumir: inputText
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na API: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const resumoGerado = data.resumo;
       
-      // Simulação de delay da API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      setSummaryText(resumoGerado);
       
-      // Mock do resumo
-      const mockSummary = "Este é um resumo gerado automaticamente do texto fornecido. A IA analisou o conteúdo e extraiu os pontos principais para criar este resumo conciso e informativo.";
-      setSummaryText(mockSummary);
-      
-      // Adicionar ao histórico
+      // Adicionar ao histórico local
       const newSummary: Summary = {
-        id: Date.now().toString(),
-        title: `Resumo ${summaries.length + 1}`,
-        originalText: inputText,
-        summaryText: mockSummary,
-        createdAt: new Date().toISOString(),
-        wordCount,
-        charCount
+        id: data.id,
+        original_text: inputText,
+        summary_text: data.resumo,
+        created_at: data.created_at
       };
-      
       setSummaries(prev => [newSummary, ...prev]);
       
-    } catch {
-      setError("Erro ao gerar resumo. Tente novamente.");
+    } catch (error) {
+      console.error('Erro ao gerar resumo:', error);
+      setError("Erro ao gerar resumo. Verifique sua conexão e tente novamente.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLogout = () => {
-    // Aqui você limparia o token de autenticação
+    // Limpar o token de autenticação
+    localStorage.removeItem('token');
     router.push("/");
+  };
+
+  const handleSettings = () => {
+    // Placeholder para funcionalidade de configurações
+    alert('Funcionalidade de configurações em desenvolvimento!');
   };
 
   const handleNewSummary = () => {
@@ -159,8 +199,35 @@ export default function DashboardPage() {
 
   const handleSelectSummary = (summary: Summary) => {
     setSelectedSummary(summary);
-    setInputText(summary.originalText);
-    setSummaryText(summary.summaryText);
+    setInputText(summary.original_text);
+    setSummaryText(summary.summary_text);
+  };
+
+  const handleDeleteSummary = async (summaryId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8001/api/historico/${summaryId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        // Remove do estado local
+        setSummaries(prev => prev.filter(s => s.id !== summaryId));
+        // Se o resumo deletado estava selecionado, limpa a seleção
+        if (selectedSummary?.id === summaryId) {
+          setSelectedSummary(null);
+          setInputText("");
+          setSummaryText("");
+        }
+      } else {
+        console.error('Erro ao deletar resumo');
+      }
+    } catch (error) {
+      console.error('Erro ao deletar resumo:', error);
+    }
   };
 
   const handleCopySummary = () => {
@@ -199,13 +266,36 @@ export default function DashboardPage() {
           
           {/* Perfil do usuário */}
           <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-            </div>
+            {isLoadingUser ? (
+              <div className="animate-pulse flex items-center space-x-3 w-full">
+                <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                <div className="flex-1 min-w-0">
+                  <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
+                  <div className="h-3 bg-gray-300 rounded w-24"></div>
+                </div>
+              </div>
+            ) : user ? (
+              <>
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {user.name?.charAt(0) || user.username?.charAt(0) || user.email.charAt(0)}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user.name || user.username || 'Usuário'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-muted-foreground">Erro ao carregar</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -225,6 +315,7 @@ export default function DashboardPage() {
               variant="outline" 
               size="sm" 
               className="flex-1"
+              onClick={handleSettings}
             >
               <Settings className="w-4 h-4 mr-2" />
               Configurações
@@ -241,36 +332,63 @@ export default function DashboardPage() {
             </h3>
             
             <div className="space-y-2">
-              {summaries.map((summary) => (
-                <motion.div
-                  key={summary.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={cn(
-                    "p-3 rounded-lg border cursor-pointer transition-all hover:bg-muted/50",
-                    selectedSummary?.id === summary.id ? "bg-muted border-cyan-500" : "bg-card border-border"
-                  )}
-                  onClick={() => handleSelectSummary(summary)}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-sm font-medium truncate flex-1">{summary.title}</h4>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                    {summary.summaryText}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{summary.wordCount} palavras</span>
-                    <span>{formatDate(summary.createdAt)}</span>
-                  </div>
-                </motion.div>
-              ))}
+              {isLoadingHistory ? (
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse p-3 rounded-lg border bg-card">
+                      <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
+                      <div className="flex justify-between">
+                        <div className="h-3 bg-gray-300 rounded w-16"></div>
+                        <div className="h-3 bg-gray-300 rounded w-20"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : summaries.length > 0 ? (
+                summaries.map((summary) => (
+                  <motion.div
+                    key={summary.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn(
+                      "p-3 rounded-lg border cursor-pointer transition-all hover:bg-muted/50 group",
+                      selectedSummary?.id === summary.id ? "bg-muted border-cyan-500" : "bg-card border-border"
+                    )}
+                    onClick={() => handleSelectSummary(summary)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-sm font-medium truncate flex-1">
+                      {summary.original_text?.substring(0, 50) || 'Resumo sem título'}...
+                    </h4>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSummary(summary.id);
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                      {summary.summary_text}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{summary.original_text?.split(' ').length || 0} palavras</span>
+                      <span>{formatDate(summary.created_at)}</span>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Nenhum resumo encontrado</p>
+                  <p className="text-xs">Crie seu primeiro resumo!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -16,10 +16,11 @@ export const API_ENDPOINTS = {
     create: '/api/resumir-texto',
     list: '/api/historico',
     delete: (id: number) => `/api/historico/${id}`,
+    export: '/api/historico/export',
   },
 };
 
-// Função helper para fazer requisições autenticadas
+// Função helper para fazer requisições autenticadas com fallback
 export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem('token');
 
@@ -39,8 +40,86 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}) =>
     },
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  return response;
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    
+    // Se a resposta for bem-sucedida, retorna normalmente
+    if (response.ok) {
+      return response;
+    }
+    
+    // Se for um erro 5xx (erro do servidor), tenta o endpoint de fallback
+    if (response.status >= 500) {
+      console.warn(`Erro ${response.status} ao acessar ${endpoint}. Tentando fallback...`);
+      return await useFallbackEndpoint(endpoint);
+    }
+    
+    // Para outros erros (4xx), retorna a resposta original
+    return response;
+  } catch (error) {
+    // Em caso de erro de rede ou outro erro não tratado, usa o fallback
+    console.error(`Erro ao acessar ${endpoint}:`, error);
+    return await useFallbackEndpoint(endpoint);
+  }
+};
+
+// Função para usar o endpoint de fallback
+async function useFallbackEndpoint(originalEndpoint: string): Promise<Response> {
+  try {
+    const fallbackResponse = await fetch(`${API_BASE_URL}/api/health/fallback`);
+    
+    if (fallbackResponse.ok) {
+      const fallbackData = await fallbackResponse.json();
+      
+      // Cria uma resposta simulada com os dados de fallback
+      const mockResponse = new Response(
+        JSON.stringify({
+          success: true,
+          message: fallbackData.message,
+          data: fallbackData.fallback_data,
+          is_fallback: true
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      return mockResponse;
+    }
+    
+    // Se o fallback também falhar, retorna um erro genérico
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: 'Serviço temporariamente indisponível',
+        is_fallback: true
+      }),
+      {
+        status: 503,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch (error) {
+    // Se tudo falhar, retorna um erro genérico
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: 'Serviço temporariamente indisponível',
+        is_fallback: true
+      }),
+      {
+        status: 503,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
 };
 
 // Função helper para requisições POST

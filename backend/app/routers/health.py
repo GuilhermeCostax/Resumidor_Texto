@@ -4,9 +4,14 @@ from sqlalchemy import text
 from ..config.database import get_db
 from ..config.settings import get_settings
 import os
+import datetime
 
 settings = get_settings()
-router = APIRouter(prefix="/api/health", tags=["health"])
+router = APIRouter(
+    prefix="/api/health",
+    tags=["health"],
+    responses={404: {"description": "Not found"}},
+)
 
 @router.get("/")
 async def health_check():
@@ -91,3 +96,20 @@ async def readiness_check(db: Session = Depends(get_db)):
 async def liveness_check():
     """Liveness check para Kubernetes/Docker"""
     return {"status": "alive"}
+
+@router.get("/fallback")
+async def fallback_endpoint():
+    """Endpoint de fallback para garantir disponibilidade em caso de falhas
+    
+    Este endpoint sempre retorna um status 200 com uma mensagem de fallback,
+    permitindo que o frontend continue funcionando mesmo quando outros serviços
+    estão indisponíveis.
+    """
+    return {
+        "status": "fallback_active",
+        "message": "O serviço está operando em modo de contingência",
+        "fallback_data": {
+            "summary": "Este é um resumo de fallback. O serviço de resumo está temporariamente indisponível. Por favor, tente novamente mais tarde.",
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+    }

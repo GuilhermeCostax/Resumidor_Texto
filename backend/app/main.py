@@ -47,11 +47,11 @@ app.add_middleware(
 
 # Rate limiting em produção
 if not settings.debug:
-    # Rate limit geral: 100 requests por minuto por IP
-    app.add_middleware(RateLimitMiddleware, calls=100, period=60)
-    # Rate limit para endpoints autenticados: 50 requests por minuto
-    app.add_middleware(AuthenticatedRateLimitMiddleware, calls=50, period=60)
-    logger.info("Rate limiting ativado para produção")
+    # Rate limit geral baseado nas configurações
+    app.add_middleware(RateLimitMiddleware, calls=settings.rate_limit_per_minute, period=60)
+    # Rate limit para endpoints autenticados baseado nas configurações
+    app.add_middleware(AuthenticatedRateLimitMiddleware, calls=settings.auth_rate_limit_per_minute, period=60)
+    logger.info(f"Rate limiting ativado para produção: {settings.rate_limit_per_minute}/min geral, {settings.auth_rate_limit_per_minute}/min autenticado")
 
 # Incluir rotas
 app.include_router(auth.router)

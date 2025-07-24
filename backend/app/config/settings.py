@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # Frontend URL
     frontend_url: str = "http://localhost:3001"
     
+    # Rate Limiting
+    rate_limit_per_minute: int = 100
+    auth_rate_limit_per_minute: int = 50
+    
     class Config:
         env_file = os.path.join(os.path.dirname(__file__), "../../../.env")
 

@@ -25,10 +25,13 @@ app = FastAPI(
 )
 
 # Configurar CORS
+# Expressão regular que permite a URL de produção E qualquer URL de preview
+# para o projeto "resumidor-texto" na Vercel.
+allow_origin_regex = r"https://resumidor-texto.*\.vercel\.app"
+
+# Também mantemos algumas origens específicas para desenvolvimento local
 allowed_origins = [
     settings.frontend_url,
-    "https://resumidor-texto.vercel.app",  # URL de produção
-    "https://resumidor-texto-m4w3b85th-guilherme-costas-projects-2a749911.vercel.app", # URL exata do erro
     "http://localhost:3000",  # Para desenvolvimento local
     "http://127.0.0.1:3000",  # Para desenvolvimento local
 ]
@@ -36,6 +39,7 @@ allowed_origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=allow_origin_regex,  # Usando regex para URLs dinâmicas da Vercel
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],

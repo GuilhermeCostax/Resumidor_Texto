@@ -18,6 +18,17 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     
+    # Email Configuration
+    smtp_server: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    from_email: str = ""
+    from_name: str = "SummarizeAI"
+    
+    # Frontend URL
+    frontend_url: str = "http://localhost:3001"
+    
     class Config:
         env_file = os.path.join(os.path.dirname(__file__), "../../../.env")
 

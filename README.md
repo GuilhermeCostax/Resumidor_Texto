@@ -14,6 +14,7 @@ Aplicação web completa para resumir textos longos usando IA (Google Gemini) co
 ## 🏗️ Arquitetura
 
 ### Stack Tecnológica
+
 - **Framework**: FastAPI
 - **Banco de Dados**: SQLite (summarizer.db)
 - **ORM**: SQLAlchemy
@@ -23,23 +24,27 @@ Aplicação web completa para resumir textos longos usando IA (Google Gemini) co
 
 ### Estrutura do Projeto
 
-- `backend/`: API FastAPI multiusuário
-  - `app/models/`: Modelos SQLAlchemy e schemas Pydantic
-  - `app/services/`: Lógica de negócio (Auth, User, Gemini)
-  - `app/routers/`: Endpoints da API
-  - `app/config/`: Configurações e banco de dados
-  - `app/dependencies/`: Dependências de autenticação
-- `summarizeai-frontend/`: Interface web (Next.js)
-- `docs/`: Documentação da API
-- `tests/`: Testes automatizados
+- `backend/`: API FastAPI construída com Python.
+  - `app/`: Contém o código fonte da aplicação.
+    - `models/`: Modelos SQLAlchemy e schemas Pydantic.
+    - `services/`: Lógica de negócio (Autenticação, Usuário, Gemini).
+    - `routers/`: Endpoints da API (rotas).
+    - `config/`: Configurações da aplicação e do banco de dados.
+    - `dependencies/`: Dependências para injeção (ex: autenticação).
+- `summarizeai-frontend/`: Interface web construída com Next.js e TypeScript.
+  - `src/app/`: Páginas e layouts da aplicação.
+  - `src/components/`: Componentes reutilizáveis (UI e lógica).
+  - `src/lib/`: Funções utilitárias e configurações.
+- `docs/`: Documentação da API (gerada automaticamente).
+- `tests/`: Testes automatizados para backend e frontend.
 
 ## 🛠️ Instalação e Configuração
 
 ### 1. Pré-requisitos
 
-- Python 3.9+
-- pip
-- Chave API do Google Gemini
+- **Python** 3.9+
+- **Node.js** 18.x+ e npm
+- **Chave API do Google Gemini**
 
 ### 2. Configuração do Ambiente
 
@@ -105,9 +110,9 @@ uvicorn app.main:app --reload
 
 A API estará disponível em: `http://localhost:8000`
 
-#### b. Iniciar o Frontend
+#### b. Iniciar o Frontend (Next.js)
 
-Abra um novo terminal, navegue até o diretório `summarizeai-frontend` e execute:
+Abra um novo terminal e execute:
 
 ```bash
 cd summarizeai-frontend
@@ -115,28 +120,32 @@ npm install
 npm run dev
 ```
 
-O frontend estará disponível em: `http://localhost:3000`
+O frontend estará disponível em: `http://localhost:3000`.
 
 **Nota**: Certifique-se de que o backend esteja rodando antes de acessar o frontend, pois o frontend depende da API para funcionar.
 
 ## 📚 Endpoints da API
 
 ### Autenticação
+
 - `POST /api/auth/register` - Registrar novo usuário
 - `POST /api/auth/login` - Login (retorna JWT token)
 - `GET /api/auth/me` - Informações do usuário atual
 
 ### Resumos
+
 - `POST /api/resumir-texto` - Resumir texto (requer autenticação)
 - `GET /api/historico` - Histórico de resumos do usuário
 
 ### Documentação
+
 - `GET /docs` - Swagger UI
 - `GET /redoc` - ReDoc
 
 ## 🔐 Como Usar
 
 ### 1. Registrar Usuário
+
 ```bash
 curl -X POST "http://localhost:8000/api/auth/register" \
   -H "Content-Type: application/json" \
@@ -148,6 +157,7 @@ curl -X POST "http://localhost:8000/api/auth/register" \
 ```
 
 ### 2. Fazer Login
+
 ```bash
 curl -X POST "http://localhost:8000/api/auth/login" \
   -H "Content-Type: application/json" \
@@ -158,6 +168,7 @@ curl -X POST "http://localhost:8000/api/auth/login" \
 ```
 
 ### 3. Resumir Texto (com token)
+
 ```bash
 curl -X POST "http://localhost:8000/api/resumir-texto" \
   -H "Authorization: Bearer SEU_TOKEN_AQUI" \
@@ -172,6 +183,7 @@ curl -X POST "http://localhost:8000/api/resumir-texto" \
 ### Tabelas
 
 **users**
+
 - id (PK)
 - email (unique)
 - username (unique)
@@ -179,6 +191,7 @@ curl -X POST "http://localhost:8000/api/resumir-texto" \
 - created_at
 
 **summaries**
+
 - id (PK)
 - user_id (FK)
 - original_text

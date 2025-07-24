@@ -13,7 +13,8 @@ class UserService:
             hashed_password = AuthService.get_password_hash(user_data.password)
             db_user = User(
                 email=user_data.email,
-                username=user_data.username,
+                username=user_data.email.split('@')[0],  # Usar parte do email como username
+                name=user_data.name,
                 hashed_password=hashed_password
             )
             db.add(db_user)
@@ -40,6 +41,21 @@ class UserService:
         return db.query(Summary).filter(
             Summary.user_id == user_id
         ).order_by(Summary.created_at.desc()).limit(limit).all()
+    
+    @staticmethod
+    def delete_user_summary(db: Session, summary_id: int, user_id: int) -> bool:
+        """Deleta um resumo específico do usuário"""
+        summary = db.query(Summary).filter(
+            Summary.id == summary_id,
+            Summary.user_id == user_id
+        ).first()
+        
+        if not summary:
+            return False
+        
+        db.delete(summary)
+        db.commit()
+        return True
     
     @staticmethod
     def create_summary(db: Session, user_id: int, original_text: str, summary_text: str) -> Summary:

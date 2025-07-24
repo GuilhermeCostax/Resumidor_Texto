@@ -3,9 +3,9 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from ..models.database import User
-from ..models.schemas import TokenData
-from ..config.settings import get_settings
+from app.models.database import User
+from app.models.schemas import TokenData
+from app.config.settings import get_settings
 
 settings = get_settings()
 

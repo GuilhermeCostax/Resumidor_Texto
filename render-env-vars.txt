@@ -1,0 +1,49 @@
+# Variáveis de Ambiente para Render
+# Copie e configure estas variáveis no painel do Render
+
+# === OBRIGATÓRIAS ===
+
+# Database (será fornecida automaticamente pelo Render PostgreSQL)
+DATABASE_URL=postgresql://username:password@host:port/database
+
+# API do Google Gemini (obtenha em https://makersuite.google.com/app/apikey)
+GEMINI_API_KEY=sua_chave_do_gemini_aqui
+
+# Chave secreta JWT (gere uma chave forte e única)
+SECRET_KEY=sua_chave_secreta_super_forte_aqui
+
+# URL do frontend (atualize com a URL real do seu frontend)
+FRONTEND_URL=https://seu-frontend-domain.com
+
+# === CONFIGURAÇÕES DE EMAIL (Opcionais) ===
+
+# Gmail com App Password
+SMTP_USERNAME=seu-email@gmail.com
+SMTP_PASSWORD=sua_app_password_do_gmail
+FROM_EMAIL=seu-email@gmail.com
+FROM_NAME=SummarizeAI
+
+# === CONFIGURAÇÕES PADRÃO (Opcionais) ===
+
+APP_NAME=AI Text Summarizer
+DEBUG=False
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+
+# === INSTRUÇÕES ===
+
+# 1. SECRET_KEY: Gere uma chave forte usando:
+#    python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# 2. GEMINI_API_KEY: Obtenha em https://makersuite.google.com/app/apikey
+
+# 3. SMTP_PASSWORD: Use App Password do Gmail:
+#    - Ative 2FA no Gmail
+#    - Vá em "Gerenciar conta" > "Segurança" > "Senhas de app"
+#    - Gere uma senha para "Mail"
+
+# 4. DATABASE_URL: Será fornecida automaticamente pelo Render PostgreSQL
+
+# 5. FRONTEND_URL: Atualize com a URL real do seu frontend deployado

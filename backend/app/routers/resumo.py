@@ -47,3 +47,15 @@ async def get_historico(
     """Retorna o histórico de resumos do usuário"""
     summaries = UserService.get_user_summaries(db, current_user.id)
     return summaries
+
+@router.delete("/historico/{summary_id}")
+async def delete_summary(
+    summary_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Deleta um resumo específico do usuário"""
+    success = UserService.delete_user_summary(db, summary_id, current_user.id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Resumo não encontrado")
+    return {"message": "Resumo deletado com sucesso"}

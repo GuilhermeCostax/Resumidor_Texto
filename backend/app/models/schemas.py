@@ -5,7 +5,7 @@ from typing import List, Optional
 # Schemas de Autenticação
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str
+    name: str
     password: str
 
 class UserLogin(BaseModel):
@@ -16,6 +16,7 @@ class User(BaseModel):
     id: int
     email: str
     username: str
+    name: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -27,6 +28,17 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+# Schemas de Recuperação de Senha
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class MessageResponse(BaseModel):
+    message: str
 
 # Schemas de Resumo
 class ResumoRequest(BaseModel):
